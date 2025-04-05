@@ -5,6 +5,8 @@ WORKDIR /app
 
 # venv作るためにビルドに必要なツールを入れる
 RUN apt-get update && apt-get install -y gcc g++ pkg-config && rm -rf /var/lib/apt/lists/*
+RUN echo "nameserver 8.8.8.8" > /etc/resolv.conf
+
 
 # 仮想環境とpipアップグレード
 RUN python -m venv venv && ./venv/bin/pip install --upgrade pip
