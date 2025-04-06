@@ -1,26 +1,21 @@
-# ベースイメージ：slimじゃない方にすることで依存関係の問題を減らす
-FROM python:3.11
+# Node.jsの公式イメージを使う
+FROM node:18
 
-# 作業ディレクトリ作成
+# 作業ディレクトリを作成
 WORKDIR /app
 
-# ビルドツールや必要なパッケージをインストール
-RUN apt-get update -o Acquire::Retries=5 && \
-    apt-get install -y gcc g++ pkg-config && \
-    rm -rf /var/lib/apt/lists/*
+# package.jsonとpackage-lock.jsonをコピーして依存関係をインストール
+COPY package*.json ./
+RUN npm install
 
-# 仮想環境を作成して pip をアップグレード
-RUN python -m venv venv && \
-    . venv/bin/activate && \
-    pip install --upgrade pip
+# アプリのソースコードをコピー
+COPY . .
 
-# （必要ならここに依存パッケージのインストールなどを追記）
-# 例: requirements.txt を追加したい場合
-# COPY requirements.txt .
-# RUN . venv/bin/activate && pip install -r requirements.txt
+# ビルド（本番用）
+RUN npm run build
 
-# アプリのコードをコピー（任意）
-# COPY . .
+# ビルドしたファイルを配信するために、軽量なサーバーに切り替える
+FROM nginx:alpine
+COPY --from=0 /app/build /usr/share/nginx/html
 
-# デフォルトのコマンド（あとで書き換えてOK）
-CMD [ "bash" ]
+# NginxがReactアプリをホストするのでCMDは不要（Nginxが勝手に起動する）
