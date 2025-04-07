@@ -14,11 +14,14 @@ COPY . .
 # ビルド（本番用）
 RUN npm run build
 
-# 🔄 ビルドしたファイルを配信するために、軽量なサーバーに切り替える
+# ビルドしたファイルを配信するために、軽量なサーバーに切り替える
 FROM nginx:alpine
 
 # ✅ Nginxが使うポートをRenderに教える
 EXPOSE 80
+
+# Nginxをフォアグラウンドで起動（←ここが追加！）
+CMD ["nginx", "-g", "daemon off;"]
 
 # buildされたReactファイルをNginxの公開ディレクトリへコピー
 COPY --from=0 /app/build /usr/share/nginx/html
